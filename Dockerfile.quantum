@@ -1,0 +1,71 @@
+# Dockerfile for quantum-enhanced build
+FROM nvidia/cuda:12.2-devel-ubuntu22.04 as quantum-builder
+
+# Install quantum computing dependencies
+RUN apt-get update && apt-get install -y \
+    cmake \
+    g++-12 \
+    clang-15 \
+    libc++-15-dev \
+    libc++abi-15-dev \
+    git \
+    libfftw3-dev \
+    libopenmpi-dev \
+    libeigen3-dev \
+    libboost-all-dev \
+    python3-qiskit \
+    python3-cirq \
+    libcuquantum-dev \
+    libcutensor-dev \
+    libnccl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set C++20 as default
+ENV CXX=g++-12
+ENV CXXFLAGS="-std=c++20 -O3 -march=native -mtune=native -ffast-math -DUSE_QUANTUM=1"
+
+WORKDIR /app
+
+# Copy quantum-enhanced source code
+COPY include/ ./include/
+COPY src/ ./src/
+COPY CMakeLists.txt ./
+
+# Build with quantum optimizations
+RUN mkdir build && cd build && \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DENABLE_QUANTUM=ON \
+        -DENABLE_CUDA=ON \
+        -DENABLE_NEUROMORPHIC=ON \
+        -DUSE_INTEL_MKL=ON \
+        -DOPTIMIZE_FOR_NATIVE=ON && \
+    make -j$(nproc)
+
+# Production stage with minimal dependencies
+FROM nvidia/cuda:12.2-runtime-ubuntu22.04
+
+RUN apt-get update && apt-get install -y \
+    libfftw3-3 \
+    libopenmpi3 \
+    libboost-system1.74.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy quantum-optimized binary
+COPY --from=quantum-builder /app/build/mini_snowflake /usr/local/bin/
+COPY --from=quantum-builder /app/build/lib*.so* /usr/local/lib/
+
+# Create quantum workspace
+RUN mkdir -p /data/quantum_cache /data/neural_weights /config/quantum
+
+EXPOSE 8080 8081 8082
+
+# Quantum-enhanced startup
+CMD ["mini_snowflake", \
+     "--port", "8080", \
+     "--quantum-mode", "hybrid", \
+     "--gpu-acceleration", "true", \
+     "--neuromorphic-cache", "true", \
+     "--holographic-storage", "/data/quantum_cache"]

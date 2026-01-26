@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+*.o
+*.obj
+*.exe
+
+# Data directory
+data/
+*.col
+_catalog.json
+
+# IDE files
+.vscode/
+.vs/
+*.user
+*.suo
+*.sln
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Compressed files
+*.zip
+*.tar.gz
