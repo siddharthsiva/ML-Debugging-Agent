@@ -1,0 +1,7 @@
+{
+  "framework": "pytorch",
+  "model": "transformer-xl",
+  "learning_rate": 0.05,
+  "batch_size": 16,
+  "optimizer": "adamw"
+}

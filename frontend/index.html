@@ -6,162 +6,272 @@
   <title>ML Experiment Debugging Agent</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #131a2f;
-      --panel-2: #1a2340;
-      --panel-3: #223056;
-      --text: #ecf2ff;
+      --bg: #07111f;
+      --bg-2: #0c1830;
+      --panel: rgba(15, 25, 48, 0.88);
+      --panel-2: rgba(28, 41, 72, 0.9);
+      --panel-3: rgba(36, 56, 97, 0.9);
+      --text: #eef4ff;
       --muted: #9fb0d9;
-      --accent: #6aa6ff;
-      --ok: #2dd4bf;
-      --warn: #f59e0b;
-      --danger: #fb7185;
+      --accent: #63a4ff;
+      --accent-2: #7c5cff;
+      --ok: #27d7a1;
+      --warn: #ffb84d;
+      --danger: #ff6b8a;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 20px 50px rgba(0,0,0,0.28);
+    }
+    * { box-sizing: border-box; }
+    body.light {
+      --bg: #f5f8ff;
+      --bg-2: #ebf2ff;
+      --panel: rgba(255,255,255,0.88);
+      --panel-2: rgba(241,246,255,0.95);
+      --panel-3: rgba(228,238,255,0.95);
+      --text: #16233f;
+      --muted: #5f6f97;
+      --border: rgba(17,35,68,0.08);
+      --shadow: 0 18px 40px rgba(37, 65, 122, 0.12);
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0b1020, #11182d);
+      font-family: Inter, Segoe UI, Arial, sans-serif;
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(124,92,255,0.22), transparent 0 28%),
+        radial-gradient(circle at top right, rgba(99,164,255,0.18), transparent 0 24%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
     }
-    .wrap {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 28px 20px 48px;
-    }
-    h1 { margin-bottom: 6px; }
-    h2, h3 { margin-bottom: 8px; }
-    p { color: var(--muted); }
+    .wrap { max-width: 1320px; margin: 0 auto; padding: 28px 20px 48px; }
     .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
       margin-bottom: 18px;
     }
-    .pill {
+    .hero-main, .hero-stats {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      animation: fadeUp 0.45s ease;
+    }
+    .hero-main { padding: 24px; }
+    .hero-stats { padding: 18px; }
+    .eyebrow {
       display: inline-block;
-      padding: 5px 10px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c8d9ff;
+      margin-bottom: 10px;
+    }
+    h1 { margin: 0 0 8px; font-size: 34px; line-height: 1.1; }
+    h2, h3 { margin: 0 0 10px; }
+    p { color: var(--muted); line-height: 1.5; }
+    .hero-copy { max-width: 720px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: 999px;
-      background: rgba(106,166,255,0.18);
-      color: #cfe1ff;
+      background: rgba(99,164,255,0.14);
+      border: 1px solid rgba(99,164,255,0.18);
+      color: #d8e6ff;
       margin-right: 8px;
       margin-bottom: 8px;
       font-size: 12px;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap: 18px;
+    .hero-actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .cta {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      border: none;
+      padding: 11px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 10px 24px rgba(99,164,255,0.22);
     }
-    .card {
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    .cta.secondary {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: none;
     }
-    .row {
+    .hero-mini-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 10px;
+      margin-top: 8px;
     }
-    label {
-      display: block;
-      font-size: 14px;
-      margin-top: 4px;
+    .mini-stat {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
     }
+    .mini-stat .label { color: var(--muted); font-size: 12px; }
+    .mini-stat .value { margin-top: 6px; font-size: 20px; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: 1.02fr 1fr; gap: 18px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+      animation: fadeUp 0.55s ease;
+    }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: block; font-size: 13px; color: #d8e6ff; margin-top: 4px; }
     textarea, input, select {
       width: 100%;
-      box-sizing: border-box;
       background: var(--panel-2);
       color: var(--text);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 10px 12px;
+      border-radius: 12px;
+      padding: 11px 12px;
       margin-top: 8px;
       margin-bottom: 14px;
+      outline: none;
     }
     textarea { min-height: 110px; resize: vertical; }
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
+    textarea:focus, input:focus, select:focus { border-color: rgba(99,164,255,0.55); box-shadow: 0 0 0 3px rgba(99,164,255,0.12); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
     button {
-      background: var(--accent);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
       color: white;
       border: none;
-      padding: 10px 16px;
-      border-radius: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 700;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
     }
+    button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(99,164,255,0.18); }
+    button:active { transform: translateY(0); }
     button.secondary {
-      background: #33466f;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
     .metric {
-      background: var(--panel-2);
-      border-radius: 10px;
-      padding: 10px;
+      background: linear-gradient(180deg, rgba(28,41,72,0.96), rgba(20,31,55,0.96));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
     }
-    .metric .label {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-    .metric .value {
-      font-size: 16px;
-      font-weight: bold;
-    }
+    .metric .label { color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+    .metric .value { font-size: 17px; font-weight: 700; }
     .result-block { margin-top: 14px; }
-    ul { padding-left: 18px; }
+    .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .insight-box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    ul { padding-left: 18px; margin-top: 8px; }
+    li { margin-bottom: 6px; }
     .small { font-size: 13px; color: var(--muted); }
     .chart {
       width: 100%;
-      height: 200px;
-      background: var(--panel-2);
-      border-radius: 10px;
+      height: 220px;
+      background: linear-gradient(180deg, rgba(28,41,72,0.96), rgba(18,28,48,0.96));
+      border: 1px solid var(--border);
+      border-radius: 14px;
       padding: 8px;
-      box-sizing: border-box;
       margin-top: 12px;
     }
-    .chart svg {
-      width: 100%;
-      height: 100%;
+    .chart svg { width: 100%; height: 100%; }
+    .legend { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .history-list {
+      max-height: 220px;
+      overflow: auto;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
     }
-    .legend {
+    .history-item { padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .history-item:last-child { border-bottom: none; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
+    .status-high { background: rgba(251,107,138,0.14); color: #ffd2dd; }
+    .status-medium { background: rgba(255,184,77,0.14); color: #ffe2b3; }
+    .status-low { background: rgba(39,215,161,0.14); color: #c9fff0; }
     pre {
       background: var(--panel-2);
+      border: 1px solid var(--border);
       padding: 12px;
-      border-radius: 10px;
+      border-radius: 14px;
       overflow: auto;
       white-space: pre-wrap;
       color: #dbe8ff;
+    }
+    @media (max-width: 980px) {
+      .hero, .grid, .row, .metrics, .insight-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="hero">
-      <h1>ML Experiment Debugging Agent</h1>
-      <p>Analyze failed training runs from logs, configs, and loss curves to get a structured diagnosis, ranked evidence, and concrete next steps.</p>
-      <div>
-        <span class="pill">Rule-based parsing</span>
-        <span class="pill">Retrieval-backed recommendations</span>
-        <span class="pill">FastAPI-ready demo</span>
-        <span class="pill">Evaluation harness</span>
+      <div class="hero-main">
+        <div class="section-title">
+          <div>
+            <span class="eyebrow">Debugging Dashboard</span>
+            <h1>ML Experiment Debugging Agent</h1>
+          </div>
+          <button class="cta secondary" id="themeToggleBtn">Toggle theme</button>
+        </div>
+        <p class="hero-copy">A polished diagnostic workspace for failed training runs. Inspect logs, configs, loss curves, and uploaded artifacts to get a ranked root cause, recommended action plan, and reusable report.</p>
+        <div>
+          <span class="pill">Parse → Retrieve → Advise</span>
+          <span class="pill">Artifact upload</span>
+          <span class="pill">Saved history</span>
+          <span class="pill">Evaluation-ready</span>
+        </div>
+        <div class="hero-actions">
+          <button class="cta" id="heroAnalyzeBtn">Run analysis</button>
+          <button class="cta secondary" id="heroHistoryBtn">View history</button>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="section-title">
+          <h3>System Snapshot</h3>
+          <span class="status-badge status-low">Demo ready</span>
+        </div>
+        <div class="hero-mini-grid">
+          <div class="mini-stat"><div class="label">Pipeline</div><div class="value">3-stage</div></div>
+          <div class="mini-stat"><div class="label">Failure modes</div><div class="value">7+</div></div>
+          <div class="mini-stat"><div class="label">Artifacts</div><div class="value">Logs + curves</div></div>
+          <div class="mini-stat"><div class="label">Reports</div><div class="value">Markdown</div></div>
+        </div>
+        <p class="small" style="margin-top:12px;">Built to feel like a lightweight internal ML operations tool rather than a class demo.</p>
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
+        <div class="section-title">
+          <h2>Experiment Input</h2>
+          <span class="status-badge status-medium">Interactive</span>
+        </div>
         <div class="row">
           <div>
             <label>Sample case</label>
@@ -205,24 +315,67 @@
           </div>
         </div>
 
+        <div class="section-title" style="margin-top:6px;">
+          <h3>Artifact Upload</h3>
+          <span class="status-badge status-low">Optional</span>
+        </div>
+        <div class="row">
+          <div>
+            <label>Log file</label>
+            <input id="logFile" type="file" accept=".txt,.log" />
+          </div>
+          <div>
+            <label>Config file</label>
+            <input id="configFile" type="file" accept=".json,.txt" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Train loss file</label>
+            <input id="trainLossFile" type="file" accept=".csv,.json,.txt" />
+          </div>
+          <div>
+            <label>Validation loss file</label>
+            <input id="valLossFile" type="file" accept=".csv,.json,.txt" />
+          </div>
+        </div>
+
         <div class="button-row">
           <button id="loadSampleBtn" class="secondary">Load sample</button>
-          <button id="analyzeBtn">Analyze run</button>
+          <button id="analyzeBtn">Analyze text inputs</button>
+          <button id="uploadBtn" class="secondary">Analyze uploads</button>
+          <button id="compareBtn" class="secondary">Compare recent runs</button>
+          <button id="refreshHistoryBtn" class="secondary">Refresh history</button>
           <button id="copyBtn" class="secondary">Copy JSON</button>
           <button id="markdownBtn" class="secondary">Export report</button>
         </div>
-        <p class="small">This demo uses the local API when available and falls back to a lightweight client-side preview otherwise.</p>
+        <p class="small">Use sample runs for a quick demo, or upload artifacts when the local API is running.</p>
       </div>
 
       <div class="card">
-        <h2>Diagnostic Report</h2>
+        <div class="section-title">
+          <h2>Diagnostic Report</h2>
+          <span id="severityBadge" class="status-badge status-low">waiting</span>
+        </div>
         <div class="metrics" id="metrics"></div>
         <div id="result"></div>
         <div class="chart" id="chart"></div>
         <div class="legend">Blue = training loss, green = validation loss</div>
+
+        <div class="insight-grid">
+          <div class="insight-box">
+            <strong>Latest JSON output</strong>
+            <pre id="jsonOutput">{}</pre>
+          </div>
+          <div class="insight-box">
+            <strong>Run comparison</strong>
+            <pre id="compareOutput">No comparison available yet.</pre>
+          </div>
+        </div>
+
         <div class="result-block">
-          <strong>Latest JSON output</strong>
-          <pre id="jsonOutput">{}</pre>
+          <strong>Saved history</strong>
+          <div class="history-list" id="historyList"><span class="small">No history loaded yet.</span></div>
         </div>
       </div>
     </div>
@@ -232,59 +385,24 @@
     const resultEl = document.getElementById('result');
     const metricsEl = document.getElementById('metrics');
     const jsonEl = document.getElementById('jsonOutput');
+    const historyEl = document.getElementById('historyList');
+    const compareEl = document.getElementById('compareOutput');
+    const severityBadge = document.getElementById('severityBadge');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
     let currentResult = {};
 
+    function setTheme(theme) {
+      document.body.classList.toggle('light', theme === 'light');
+      localStorage.setItem('ml_debugger_theme', theme);
+      themeToggleBtn.textContent = theme === 'light' ? 'Dark theme' : 'Light theme';
+    }
+
     const SAMPLE_CASES = [
-      {
-        name: 'GPU OOM',
-        run_name: 'bert-large-oom',
-        framework: 'pytorch',
-        model_name: 'bert-large',
-        log_text: 'RuntimeError: CUDA out of memory. Tried to allocate 1.80 GiB during attention forward pass.',
-        config: { learning_rate: 0.0005, batch_size: 128, model: 'bert-large' },
-        loss_text: '2.3, 2.2, 2.2, 2.1',
-        val_loss_text: '2.4, 2.35, 2.3, 2.25'
-      },
-      {
-        name: 'Shape mismatch',
-        run_name: 'classifier-head-mismatch',
-        framework: 'pytorch',
-        model_name: 'custom-transformer',
-        log_text: 'RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x512 and 768x10)',
-        config: { learning_rate: 0.0003, batch_size: 32, hidden_dim: 512, classifier_dim: 768 },
-        loss_text: '1.7, 1.6, 1.55, 1.52',
-        val_loss_text: '1.8, 1.7, 1.68, 1.67'
-      },
-      {
-        name: 'NaN instability',
-        run_name: 'unstable-transformer',
-        framework: 'pytorch',
-        model_name: 'transformer-xl',
-        log_text: 'Step 440: loss=nan, grad_norm=inf',
-        config: { learning_rate: 0.05, batch_size: 16, optimizer: 'adamw' },
-        loss_text: '1.2, 1.5, 2.8, 99.0',
-        val_loss_text: '1.3, 1.7, 4.1, 100.0'
-      },
-      {
-        name: 'Overfitting',
-        run_name: 'small-dataset-overfit',
-        framework: 'pytorch',
-        model_name: 'resnet34',
-        log_text: 'Validation accuracy peaks early and then degrades over later epochs.',
-        config: { learning_rate: 0.0007, batch_size: 32, augmentation: 'light' },
-        loss_text: '1.6, 1.2, 0.9, 0.7, 0.5',
-        val_loss_text: '1.3, 1.25, 1.35, 1.5, 1.7'
-      },
-      {
-        name: 'Data pipeline issue',
-        run_name: 'broken-dataset-path',
-        framework: 'pytorch',
-        model_name: 'cnn-baseline',
-        log_text: 'FileNotFoundError: No such file or directory while DataLoader worker 0 was reading training shard 18.',
-        config: { learning_rate: 0.001, batch_size: 8, dataset: 'custom-images' },
-        loss_text: '',
-        val_loss_text: ''
-      }
+      { name: 'GPU OOM', run_name: 'bert-large-oom', framework: 'pytorch', model_name: 'bert-large', log_text: 'RuntimeError: CUDA out of memory. Tried to allocate 1.80 GiB during attention forward pass.', config: { learning_rate: 0.0005, batch_size: 128, model: 'bert-large' }, loss_text: '2.3, 2.2, 2.2, 2.1', val_loss_text: '2.4, 2.35, 2.3, 2.25' },
+      { name: 'Shape mismatch', run_name: 'classifier-head-mismatch', framework: 'pytorch', model_name: 'custom-transformer', log_text: 'RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x512 and 768x10)', config: { learning_rate: 0.0003, batch_size: 32, hidden_dim: 512, classifier_dim: 768 }, loss_text: '1.7, 1.6, 1.55, 1.52', val_loss_text: '1.8, 1.7, 1.68, 1.67' },
+      { name: 'NaN instability', run_name: 'unstable-transformer', framework: 'pytorch', model_name: 'transformer-xl', log_text: 'Step 440: loss=nan, grad_norm=inf', config: { learning_rate: 0.05, batch_size: 16, optimizer: 'adamw' }, loss_text: '1.2, 1.5, 2.8, 99.0', val_loss_text: '1.3, 1.7, 4.1, 100.0' },
+      { name: 'Overfitting', run_name: 'small-dataset-overfit', framework: 'pytorch', model_name: 'resnet34', log_text: 'Validation accuracy peaks early and then degrades over later epochs.', config: { learning_rate: 0.0007, batch_size: 32, augmentation: 'light' }, loss_text: '1.6, 1.2, 0.9, 0.7, 0.5', val_loss_text: '1.3, 1.25, 1.35, 1.5, 1.7' },
+      { name: 'Data pipeline issue', run_name: 'broken-dataset-path', framework: 'pytorch', model_name: 'cnn-baseline', log_text: 'FileNotFoundError: No such file or directory while DataLoader worker 0 was reading training shard 18.', config: { learning_rate: 0.001, batch_size: 8, dataset: 'custom-images' }, loss_text: '', val_loss_text: '' }
     ];
 
     function populateSamples() {
@@ -296,7 +414,6 @@
       const index = Number(document.getElementById('sampleSelect').value || 0);
       const sample = SAMPLE_CASES[index];
       if (!sample) return;
-
       document.getElementById('runName').value = sample.run_name;
       document.getElementById('framework').value = sample.framework;
       document.getElementById('modelName').value = sample.model_name;
@@ -307,22 +424,7 @@
     }
 
     function parseSeries(rawText) {
-      return (rawText || '')
-        .split(/[ ,\n\t]+/)
-        .map(Number)
-        .filter(v => !Number.isNaN(v));
-    }
-
-    function polyline(values, width, height, pad) {
-      if (!values.length) return '';
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-      const span = Math.max(max - min, 1e-6);
-      return values.map((v, i) => {
-        const x = pad + (i * (width - pad * 2)) / Math.max(values.length - 1, 1);
-        const y = height - pad - ((v - min) / span) * (height - pad * 2);
-        return `${x},${y}`;
-      }).join(' ');
+      return (rawText || '').split(/[ ,\n\t]+/).map(Number).filter(v => !Number.isNaN(v));
     }
 
     function renderChart(trainText, valText) {
@@ -333,7 +435,6 @@
         chartEl.innerHTML = '<p class="small">No loss values available for charting.</p>';
         return;
       }
-
       const width = 560;
       const height = 180;
       const pad = 18;
@@ -341,21 +442,18 @@
       const min = Math.min(...all);
       const max = Math.max(...all);
       const span = Math.max(max - min, 1e-6);
-
       const toPoints = values => values.map((v, i) => {
         const x = pad + (i * (width - pad * 2)) / Math.max(values.length - 1, 1);
         const y = height - pad - ((v - min) / span) * (height - pad * 2);
         return `${x},${y}`;
       }).join(' ');
-
       chartEl.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
           <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#7892c2" stroke-width="1" />
           <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="#7892c2" stroke-width="1" />
           ${train.length ? `<polyline fill="none" stroke="#6aa6ff" stroke-width="3" points="${toPoints(train)}" />` : ''}
           ${val.length ? `<polyline fill="none" stroke="#2dd4bf" stroke-width="3" points="${toPoints(val)}" />` : ''}
-        </svg>
-      `;
+        </svg>`;
     }
 
     function renderMetrics(data) {
@@ -363,20 +461,21 @@
         ['Root cause', data.root_cause || 'unknown'],
         ['Confidence', data.confidence ?? 'n/a'],
         ['Stage', data.stage || 'training_loop'],
-        ['Severity', data.severity || 'low']
+        ['Severity', data.severity || 'low'],
+        ['Framework', data.likely_framework || data.framework || 'unknown'],
+        ['Retrieval', data.retrieval_backend || 'fallback']
       ];
-      metricsEl.innerHTML = items.map(item => `
-        <div class="metric">
-          <div class="label">${item[0]}</div>
-          <div class="value">${item[1]}</div>
-        </div>
-      `).join('');
+      metricsEl.innerHTML = items.map(item => `<div class="metric"><div class="label">${item[0]}</div><div class="value">${item[1]}</div></div>`).join('');
     }
 
     function renderResult(data) {
       currentResult = data;
       renderMetrics(data);
       jsonEl.textContent = JSON.stringify(data, null, 2);
+
+      const severity = (data.severity || 'low').toLowerCase();
+      severityBadge.textContent = severity + ' severity';
+      severityBadge.className = 'status-badge ' + (severity === 'high' ? 'status-high' : severity === 'medium' ? 'status-medium' : 'status-low');
 
       const symptoms = (data.symptoms || []).map(item => `<li><strong>${item.name}</strong>: ${item.evidence}</li>`).join('');
       const fixes = (data.suggested_fixes || []).map(item => `<li>${item}</li>`).join('');
@@ -385,13 +484,20 @@
       const plan = (data.action_plan || data.next_steps || []).map(item => `<li>${item}</li>`).join('');
 
       resultEl.innerHTML = `
-        <div class="result-block"><strong>Summary</strong><p>${data.summary || ''}</p></div>
-        <div class="result-block"><strong>Symptoms</strong><ul>${symptoms || '<li>No symptoms captured.</li>'}</ul></div>
-        <div class="result-block"><strong>Action plan</strong><ul>${plan || '<li>Collect more telemetry and rerun the analyzer.</li>'}</ul></div>
-        <div class="result-block"><strong>Telemetry to collect</strong><ul>${telemetry || '<li>Full stack trace</li>'}</ul></div>
-        <div class="result-block"><strong>Matched references</strong><div>${docs || '<span class="small">No matches</span>'}</div></div>
-        <div class="result-block"><strong>Suggested fixes</strong><ul>${fixes}</ul></div>
-      `;
+        <div class="result-block">
+          <div class="pill">Run: ${data.run_name || 'experiment-run'}</div>
+          <div class="pill">History ID: ${data.history_id || 'not-saved'}</div>
+        </div>
+        <div class="result-block"><strong>Executive summary</strong><p>${data.summary || ''}</p></div>
+        <div class="insight-grid">
+          <div class="insight-box"><strong>Symptoms</strong><ul>${symptoms || '<li>No symptoms captured.</li>'}</ul></div>
+          <div class="insight-box"><strong>Action plan</strong><ul>${plan || '<li>Collect more telemetry and rerun the analyzer.</li>'}</ul></div>
+        </div>
+        <div class="insight-grid">
+          <div class="insight-box"><strong>Telemetry to collect</strong><ul>${telemetry || '<li>Full stack trace</li>'}</ul></div>
+          <div class="insight-box"><strong>Suggested fixes</strong><ul>${fixes}</ul></div>
+        </div>
+        <div class="result-block"><strong>Matched references</strong><div>${docs || '<span class="small">No matches</span>'}</div></div>`;
     }
 
     function buildFallback(logText, trainLossText, valLossText) {
@@ -400,39 +506,26 @@
       let summary = 'The current evidence is inconclusive.';
       let stage = 'training_loop';
       let severity = 'low';
-
       if (log.includes('out of memory') || log.includes('oom')) {
-        cause = 'oom';
-        stage = 'forward_pass';
-        severity = 'high';
-        summary = 'The run likely failed because the model exceeded available memory.';
+        cause = 'oom'; stage = 'forward_pass'; severity = 'high'; summary = 'The run likely failed because the model exceeded available memory.';
       } else if (log.includes('shape') || log.includes('mat1 and mat2')) {
-        cause = 'shape_mismatch';
-        stage = 'forward_pass';
-        severity = 'high';
-        summary = 'The run likely failed due to incompatible tensor dimensions.';
+        cause = 'shape_mismatch'; stage = 'forward_pass'; severity = 'high'; summary = 'The run likely failed due to incompatible tensor dimensions.';
       } else if (log.includes('nan') || log.includes('inf')) {
-        cause = 'nan_instability';
-        stage = 'optimization';
-        severity = 'high';
-        summary = 'The run appears numerically unstable.';
+        cause = 'nan_instability'; stage = 'optimization'; severity = 'high'; summary = 'The run appears numerically unstable.';
       }
-
       return {
+        run_name: document.getElementById('runName').value || 'demo-run',
         root_cause: cause,
         confidence: 0.7,
         summary,
         stage,
         severity,
-        symptoms: [
-          { name: 'demo mode', evidence: 'Frontend fallback is active because the API is unavailable.' }
-        ],
-        suggested_fixes: [
-          'Start the backend API for full rule-based analysis.',
-          'Add more training logs and configs for better evaluation.'
-        ],
+        likely_framework: document.getElementById('framework').value || 'pytorch',
+        symptoms: [{ name: 'demo mode', evidence: 'Frontend fallback is active because the API is unavailable.' }],
+        suggested_fixes: ['Start the backend API for full rule-based analysis.', 'Add more training logs and configs for better evaluation.'],
         telemetry_to_collect: ['full stack trace', 'train and validation losses'],
-        action_plan: ['Start the API service locally and rerun the sample case.']
+        action_plan: ['Start the API service locally and rerun the sample case.'],
+        retrieval_backend: 'client-fallback'
       };
     }
 
@@ -443,7 +536,6 @@
       } catch {
         throw new Error('The config box must contain valid JSON.');
       }
-
       return {
         run_name: document.getElementById('runName').value,
         framework: document.getElementById('framework').value,
@@ -460,55 +552,80 @@
       try {
         payload = currentPayload();
       } catch (error) {
-        renderResult({
-          root_cause: 'input_error',
-          confidence: 0.99,
-          stage: 'input',
-          severity: 'low',
-          summary: error.message,
-          symptoms: [{ name: 'invalid config', evidence: 'Config JSON could not be parsed.' }],
-          suggested_fixes: ['Fix the JSON formatting and try again.'],
-          telemetry_to_collect: [],
-          action_plan: []
-        });
+        renderResult({ root_cause: 'input_error', confidence: 0.99, stage: 'input', severity: 'low', summary: error.message, symptoms: [{ name: 'invalid config', evidence: 'Config JSON could not be parsed.' }], suggested_fixes: ['Fix the JSON formatting and try again.'], telemetry_to_collect: [], action_plan: [] });
         return;
       }
-
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          throw new Error('API returned a non-success status');
-        }
-
+        const response = await fetch('http://127.0.0.1:8000/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!response.ok) throw new Error('API returned a non-success status');
         const data = await response.json();
         renderResult(data);
       } catch {
         renderResult(buildFallback(payload.log_text, payload.loss_text, payload.val_loss_text));
       }
-
       renderChart(payload.loss_text, payload.val_loss_text);
+      loadHistory();
+    }
+
+    async function analyzeUploads() {
+      const form = new FormData();
+      form.append('run_name', document.getElementById('runName').value || 'uploaded-run');
+      form.append('framework', document.getElementById('framework').value || 'pytorch');
+      form.append('model_name', document.getElementById('modelName').value || '');
+      const files = ['logFile', 'configFile', 'trainLossFile', 'valLossFile'];
+      const names = ['log_file', 'config_file', 'train_loss_file', 'val_loss_file'];
+      for (let i = 0; i < files.length; i++) {
+        const el = document.getElementById(files[i]);
+        if (el.files && el.files[0]) {
+          form.append(names[i], el.files[0]);
+        }
+      }
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/analyze-upload', { method: 'POST', body: form });
+        if (!response.ok) throw new Error('upload failed');
+        const data = await response.json();
+        renderResult(data);
+        loadHistory();
+      } catch {
+        compareEl.textContent = 'Upload analysis requires the local API to be running.';
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/history?limit=8');
+        if (!response.ok) throw new Error('history unavailable');
+        const items = await response.json();
+        if (!items.length) {
+          historyEl.innerHTML = '<span class="small">No saved history yet.</span>';
+          return;
+        }
+        historyEl.innerHTML = items.map(item => `<div class="history-item"><strong>${item.run_name}</strong><br><span class="small">${item.root_cause} • confidence ${item.confidence} • ${item.timestamp}</span></div>`).join('');
+      } catch {
+        historyEl.innerHTML = '<span class="small">History becomes available once the local API is running and analyses are saved.</span>';
+      }
+    }
+
+    async function compareHistory() {
+      const runName = encodeURIComponent(document.getElementById('runName').value || '');
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/api/history/compare-latest?run_name=${runName}`);
+        if (!response.ok) throw new Error('compare unavailable');
+        const data = await response.json();
+        compareEl.textContent = JSON.stringify(data, null, 2);
+      } catch {
+        compareEl.textContent = 'Comparison is available when at least two analyses have been saved for the current run.';
+      }
     }
 
     async function copyJson() {
-      try {
-        await navigator.clipboard.writeText(JSON.stringify(currentResult, null, 2));
-      } catch {
-      }
+      try { await navigator.clipboard.writeText(JSON.stringify(currentResult, null, 2)); } catch {}
     }
 
     async function exportMarkdown() {
       const payload = currentPayload();
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/report-markdown', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const response = await fetch('http://127.0.0.1:8000/api/report-markdown', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!response.ok) throw new Error('failed');
         const markdown = await response.text();
         downloadText(markdown, `${payload.run_name || 'diagnostic-report'}.md`);
@@ -530,9 +647,20 @@
 
     document.getElementById('loadSampleBtn').addEventListener('click', () => { applySample(); analyze(); });
     document.getElementById('analyzeBtn').addEventListener('click', analyze);
+    document.getElementById('uploadBtn').addEventListener('click', analyzeUploads);
+    document.getElementById('compareBtn').addEventListener('click', compareHistory);
+    document.getElementById('refreshHistoryBtn').addEventListener('click', loadHistory);
     document.getElementById('copyBtn').addEventListener('click', copyJson);
     document.getElementById('markdownBtn').addEventListener('click', exportMarkdown);
+    document.getElementById('heroAnalyzeBtn').addEventListener('click', analyze);
+    document.getElementById('heroHistoryBtn').addEventListener('click', loadHistory);
+    themeToggleBtn.addEventListener('click', () => {
+      const nextTheme = document.body.classList.contains('light') ? 'dark' : 'light';
+      setTheme(nextTheme);
+    });
 
+    const savedTheme = localStorage.getItem('ml_debugger_theme') || 'dark';
+    setTheme(savedTheme);
     populateSamples();
     applySample();
     analyze();

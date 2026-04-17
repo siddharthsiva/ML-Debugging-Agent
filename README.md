@@ -37,19 +37,19 @@ The current MVP uses a simple three-stage pipeline:
 
 ## Engineering features
 
-- structured FastAPI endpoints for analysis, evaluation, and markdown report export
-- curated failure-mode library and sample-case evaluation harness
-- browser-based diagnostic UI with sample scenarios, loss-curve visualization, JSON export, and report download
-- containerization support through the root Dockerfile
-- basic continuous integration through the GitHub Actions workflow
+- structured FastAPI endpoints for analysis, upload-based artifact ingestion, evaluation, history lookup, and markdown report export
+- curated failure-mode library, saved analysis history, and sample-case evaluation harness with per-category accuracy and confusion-style output
+- browser-based diagnostic UI with sample scenarios, loss-curve visualization, JSON export, report download, artifact upload, and recent-run comparison
+- keyword retrieval that is ready to switch to sentence-transformer embeddings when optional dependencies are installed
+- containerization support through the root Dockerfile, deployment config in [render.yaml](render.yaml), and CI through the GitHub Actions workflow
 
-## Good next upgrades
+## Recommended polish for the final portfolio version
 
-- support uploaded training artifacts and screenshots
-- add richer experiment history and saved reports
-- swap the retrieval layer to embeddings for stronger semantic search
-- connect to experiment trackers such as Weights and Biases or MLflow
-- package the workflow behind a deployed API and demo site
+- deploy the FastAPI service and host the demo UI publicly
+- add 20 to 50 curated failure cases with screenshots of reports
+- integrate experiment trackers such as Weights and Biases or MLflow
+- swap the retrieval layer fully to embeddings and local vector search
+- add authentication and multi-user saved workspaces if you want to turn it into a more product-like app
 
 ## Project structure
 

@@ -9,6 +9,7 @@ def render_markdown_report(result: dict[str, Any]) -> str:
     fixes = result.get("suggested_fixes", [])
     telemetry = result.get("telemetry_to_collect", [])
     matches = result.get("matched_documents", [])
+    action_plan = result.get("action_plan", [])
 
     lines = [
         f"# Diagnostic Report: {run_name}",
@@ -18,6 +19,7 @@ def render_markdown_report(result: dict[str, Any]) -> str:
         f"- Severity: {result.get('severity', 'low')}",
         f"- Stage: {result.get('stage', 'training_loop')}",
         f"- Framework: {result.get('likely_framework', 'unknown')}",
+        f"- History ID: {result.get('history_id', 'not-saved')}",
         "",
         "## Summary",
         result.get("summary", "No summary available."),
@@ -30,6 +32,10 @@ def render_markdown_report(result: dict[str, Any]) -> str:
             lines.append(f"- {item.get('name', 'signal')}: {item.get('evidence', '')}")
     else:
         lines.append("- No strong symptoms were detected.")
+
+    lines.extend(["", "## Action plan"])
+    for step in action_plan or ["Collect more telemetry and rerun the analyzer."]:
+        lines.append(f"- {step}")
 
     lines.extend(["", "## Suggested fixes"])
     for fix in fixes or ["Collect more telemetry and rerun the analyzer."]:
