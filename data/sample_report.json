@@ -1,0 +1,25 @@
+{
+  "root_cause": "oom",
+  "confidence": 0.95,
+  "summary": "The run likely failed because the model exceeded available memory.",
+  "symptoms": [
+    {
+      "name": "memory pressure",
+      "severity": "high",
+      "evidence": "Detected an out-of-memory error in the log."
+    }
+  ],
+  "suggested_fixes": [
+    "Reduce batch size or sequence length.",
+    "Enable mixed precision or gradient checkpointing.",
+    "Free cached tensors and avoid storing full activations unnecessarily."
+  ],
+  "matched_documents": [
+    "CUDA out of memory"
+  ],
+  "next_steps": [
+    "Reduce batch size or context length.",
+    "Enable mixed precision to cut activation memory.",
+    "Profile peak memory around the forward pass."
+  ]
+}

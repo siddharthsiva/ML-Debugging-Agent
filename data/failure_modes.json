@@ -1,0 +1,72 @@
+[
+  {
+    "title": "CUDA out of memory",
+    "tags": ["oom", "memory", "gpu"],
+    "symptoms": ["cuda out of memory", "allocation failure", "batch too large"],
+    "advice": [
+      "Reduce batch size or context length.",
+      "Enable mixed precision to cut activation memory.",
+      "Profile peak memory around the forward pass."
+    ]
+  },
+  {
+    "title": "Tensor shape mismatch",
+    "tags": ["shape", "dimension", "matmul"],
+    "symptoms": ["size mismatch", "shapes cannot be multiplied", "expected size"],
+    "advice": [
+      "Log tensor shapes before the failing operator.",
+      "Check feature width after embedding or pooling.",
+      "Verify the output layer against the label schema."
+    ]
+  },
+  {
+    "title": "Exploding loss",
+    "tags": ["nan", "instability", "exploding"],
+    "symptoms": ["nan loss", "gradient explosion", "loss spike"],
+    "advice": [
+      "Lower the learning rate and apply gradient clipping.",
+      "Inspect normalization and target scaling.",
+      "Compare with a smaller baseline model."
+    ]
+  },
+  {
+    "title": "Training plateau",
+    "tags": ["plateau", "stalled", "underfitting"],
+    "symptoms": ["flat loss", "low improvement", "no progress"],
+    "advice": [
+      "Tune the scheduler or optimizer settings.",
+      "Increase model capacity or improve features.",
+      "Audit the dataset for noisy or imbalanced labels."
+    ]
+  },
+  {
+    "title": "Overfitting",
+    "tags": ["generalization", "overfit", "validation gap"],
+    "symptoms": ["train improves while validation worsens", "high variance"],
+    "advice": [
+      "Add regularization and early stopping.",
+      "Increase data augmentation.",
+      "Reduce model size or train fewer epochs."
+    ]
+  },
+  {
+    "title": "Data pipeline failure",
+    "tags": ["dataset", "dataloader", "path", "file"],
+    "symptoms": ["file not found", "dataloader worker exited", "keyerror in dataset"],
+    "advice": [
+      "Validate the dataset manifest and file paths.",
+      "Run with one worker to isolate the bad sample.",
+      "Log the first batch before training starts."
+    ]
+  },
+  {
+    "title": "Optimization instability",
+    "tags": ["learning rate", "optimizer", "gradients"],
+    "symptoms": ["loss diverges", "unstable updates", "spiky training curve"],
+    "advice": [
+      "Lower the learning rate or add warmup.",
+      "Inspect weight decay and beta settings.",
+      "Compare the run against a smaller baseline configuration."
+    ]
+  }
+]

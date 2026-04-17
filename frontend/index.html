@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML Experiment Debugging Agent</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #131a2f;
+      --panel-2: #1a2340;
+      --panel-3: #223056;
+      --text: #ecf2ff;
+      --muted: #9fb0d9;
+      --accent: #6aa6ff;
+      --ok: #2dd4bf;
+      --warn: #f59e0b;
+      --danger: #fb7185;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0b1020, #11182d);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    h1 { margin-bottom: 6px; }
+    h2, h3 { margin-bottom: 8px; }
+    p { color: var(--muted); }
+    .hero {
+      margin-bottom: 18px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(106,166,255,0.18);
+      color: #cfe1ff;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    textarea, input, select {
+      width: 100%;
+      box-sizing: border-box;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.secondary {
+      background: #33466f;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .metric {
+      background: var(--panel-2);
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .metric .value {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .result-block { margin-top: 14px; }
+    ul { padding-left: 18px; }
+    .small { font-size: 13px; color: var(--muted); }
+    .chart {
+      width: 100%;
+      height: 200px;
+      background: var(--panel-2);
+      border-radius: 10px;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-top: 12px;
+    }
+    .chart svg {
+      width: 100%;
+      height: 100%;
+    }
+    .legend {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    pre {
+      background: var(--panel-2);
+      padding: 12px;
+      border-radius: 10px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: #dbe8ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>ML Experiment Debugging Agent</h1>
+      <p>Analyze failed training runs from logs, configs, and loss curves to get a structured diagnosis, ranked evidence, and concrete next steps.</p>
+      <div>
+        <span class="pill">Rule-based parsing</span>
+        <span class="pill">Retrieval-backed recommendations</span>
+        <span class="pill">FastAPI-ready demo</span>
+        <span class="pill">Evaluation harness</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>Sample case</label>
+            <select id="sampleSelect"></select>
+          </div>
+          <div>
+            <label>Run name</label>
+            <input id="runName" value="bert-large-oom" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Framework</label>
+            <input id="framework" value="pytorch" />
+          </div>
+          <div>
+            <label>Model name</label>
+            <input id="modelName" value="resnet18" />
+          </div>
+        </div>
+
+        <label>Training log</label>
+        <textarea id="logText">RuntimeError: CUDA out of memory. Tried to allocate 2.00 GiB on GPU 0 during forward pass.</textarea>
+
+        <label>Config JSON</label>
+        <textarea id="configText">{
+  "learning_rate": 0.001,
+  "batch_size": 64,
+  "model": "resnet18"
+}</textarea>
+
+        <div class="row">
+          <div>
+            <label>Train loss values</label>
+            <input id="lossText" value="2.4, 2.1, 2.05, 2.03, 2.02" />
+          </div>
+          <div>
+            <label>Validation loss values</label>
+            <input id="valLossText" value="2.5, 2.3, 2.35, 2.4, 2.45" />
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="loadSampleBtn" class="secondary">Load sample</button>
+          <button id="analyzeBtn">Analyze run</button>
+          <button id="copyBtn" class="secondary">Copy JSON</button>
+          <button id="markdownBtn" class="secondary">Export report</button>
+        </div>
+        <p class="small">This demo uses the local API when available and falls back to a lightweight client-side preview otherwise.</p>
+      </div>
+
+      <div class="card">
+        <h2>Diagnostic Report</h2>
+        <div class="metrics" id="metrics"></div>
+        <div id="result"></div>
+        <div class="chart" id="chart"></div>
+        <div class="legend">Blue = training loss, green = validation loss</div>
+        <div class="result-block">
+          <strong>Latest JSON output</strong>
+          <pre id="jsonOutput">{}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const resultEl = document.getElementById('result');
+    const metricsEl = document.getElementById('metrics');
+    const jsonEl = document.getElementById('jsonOutput');
+    let currentResult = {};
+
+    const SAMPLE_CASES = [
+      {
+        name: 'GPU OOM',
+        run_name: 'bert-large-oom',
+        framework: 'pytorch',
+        model_name: 'bert-large',
+        log_text: 'RuntimeError: CUDA out of memory. Tried to allocate 1.80 GiB during attention forward pass.',
+        config: { learning_rate: 0.0005, batch_size: 128, model: 'bert-large' },
+        loss_text: '2.3, 2.2, 2.2, 2.1',
+        val_loss_text: '2.4, 2.35, 2.3, 2.25'
+      },
+      {
+        name: 'Shape mismatch',
+        run_name: 'classifier-head-mismatch',
+        framework: 'pytorch',
+        model_name: 'custom-transformer',
+        log_text: 'RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x512 and 768x10)',
+        config: { learning_rate: 0.0003, batch_size: 32, hidden_dim: 512, classifier_dim: 768 },
+        loss_text: '1.7, 1.6, 1.55, 1.52',
+        val_loss_text: '1.8, 1.7, 1.68, 1.67'
+      },
+      {
+        name: 'NaN instability',
+        run_name: 'unstable-transformer',
+        framework: 'pytorch',
+        model_name: 'transformer-xl',
+        log_text: 'Step 440: loss=nan, grad_norm=inf',
+        config: { learning_rate: 0.05, batch_size: 16, optimizer: 'adamw' },
+        loss_text: '1.2, 1.5, 2.8, 99.0',
+        val_loss_text: '1.3, 1.7, 4.1, 100.0'
+      },
+      {
+        name: 'Overfitting',
+        run_name: 'small-dataset-overfit',
+        framework: 'pytorch',
+        model_name: 'resnet34',
+        log_text: 'Validation accuracy peaks early and then degrades over later epochs.',
+        config: { learning_rate: 0.0007, batch_size: 32, augmentation: 'light' },
+        loss_text: '1.6, 1.2, 0.9, 0.7, 0.5',
+        val_loss_text: '1.3, 1.25, 1.35, 1.5, 1.7'
+      },
+      {
+        name: 'Data pipeline issue',
+        run_name: 'broken-dataset-path',
+        framework: 'pytorch',
+        model_name: 'cnn-baseline',
+        log_text: 'FileNotFoundError: No such file or directory while DataLoader worker 0 was reading training shard 18.',
+        config: { learning_rate: 0.001, batch_size: 8, dataset: 'custom-images' },
+        loss_text: '',
+        val_loss_text: ''
+      }
+    ];
+
+    function populateSamples() {
+      const select = document.getElementById('sampleSelect');
+      select.innerHTML = SAMPLE_CASES.map((item, idx) => `<option value="${idx}">${item.name}</option>`).join('');
+    }
+
+    function applySample() {
+      const index = Number(document.getElementById('sampleSelect').value || 0);
+      const sample = SAMPLE_CASES[index];
+      if (!sample) return;
+
+      document.getElementById('runName').value = sample.run_name;
+      document.getElementById('framework').value = sample.framework;
+      document.getElementById('modelName').value = sample.model_name;
+      document.getElementById('logText').value = sample.log_text;
+      document.getElementById('configText').value = JSON.stringify(sample.config, null, 2);
+      document.getElementById('lossText').value = sample.loss_text;
+      document.getElementById('valLossText').value = sample.val_loss_text;
+    }
+
+    function parseSeries(rawText) {
+      return (rawText || '')
+        .split(/[ ,\n\t]+/)
+        .map(Number)
+        .filter(v => !Number.isNaN(v));
+    }
+
+    function polyline(values, width, height, pad) {
+      if (!values.length) return '';
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const span = Math.max(max - min, 1e-6);
+      return values.map((v, i) => {
+        const x = pad + (i * (width - pad * 2)) / Math.max(values.length - 1, 1);
+        const y = height - pad - ((v - min) / span) * (height - pad * 2);
+        return `${x},${y}`;
+      }).join(' ');
+    }
+
+    function renderChart(trainText, valText) {
+      const train = parseSeries(trainText);
+      const val = parseSeries(valText);
+      const chartEl = document.getElementById('chart');
+      if (!train.length && !val.length) {
+        chartEl.innerHTML = '<p class="small">No loss values available for charting.</p>';
+        return;
+      }
+
+      const width = 560;
+      const height = 180;
+      const pad = 18;
+      const all = [...train, ...val];
+      const min = Math.min(...all);
+      const max = Math.max(...all);
+      const span = Math.max(max - min, 1e-6);
+
+      const toPoints = values => values.map((v, i) => {
+        const x = pad + (i * (width - pad * 2)) / Math.max(values.length - 1, 1);
+        const y = height - pad - ((v - min) / span) * (height - pad * 2);
+        return `${x},${y}`;
+      }).join(' ');
+
+      chartEl.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+          <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#7892c2" stroke-width="1" />
+          <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="#7892c2" stroke-width="1" />
+          ${train.length ? `<polyline fill="none" stroke="#6aa6ff" stroke-width="3" points="${toPoints(train)}" />` : ''}
+          ${val.length ? `<polyline fill="none" stroke="#2dd4bf" stroke-width="3" points="${toPoints(val)}" />` : ''}
+        </svg>
+      `;
+    }
+
+    function renderMetrics(data) {
+      const items = [
+        ['Root cause', data.root_cause || 'unknown'],
+        ['Confidence', data.confidence ?? 'n/a'],
+        ['Stage', data.stage || 'training_loop'],
+        ['Severity', data.severity || 'low']
+      ];
+      metricsEl.innerHTML = items.map(item => `
+        <div class="metric">
+          <div class="label">${item[0]}</div>
+          <div class="value">${item[1]}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderResult(data) {
+      currentResult = data;
+      renderMetrics(data);
+      jsonEl.textContent = JSON.stringify(data, null, 2);
+
+      const symptoms = (data.symptoms || []).map(item => `<li><strong>${item.name}</strong>: ${item.evidence}</li>`).join('');
+      const fixes = (data.suggested_fixes || []).map(item => `<li>${item}</li>`).join('');
+      const telemetry = (data.telemetry_to_collect || []).map(item => `<li>${item}</li>`).join('');
+      const docs = (data.matched_documents || []).map(item => `<span class="pill">${item}</span>`).join('');
+      const plan = (data.action_plan || data.next_steps || []).map(item => `<li>${item}</li>`).join('');
+
+      resultEl.innerHTML = `
+        <div class="result-block"><strong>Summary</strong><p>${data.summary || ''}</p></div>
+        <div class="result-block"><strong>Symptoms</strong><ul>${symptoms || '<li>No symptoms captured.</li>'}</ul></div>
+        <div class="result-block"><strong>Action plan</strong><ul>${plan || '<li>Collect more telemetry and rerun the analyzer.</li>'}</ul></div>
+        <div class="result-block"><strong>Telemetry to collect</strong><ul>${telemetry || '<li>Full stack trace</li>'}</ul></div>
+        <div class="result-block"><strong>Matched references</strong><div>${docs || '<span class="small">No matches</span>'}</div></div>
+        <div class="result-block"><strong>Suggested fixes</strong><ul>${fixes}</ul></div>
+      `;
+    }
+
+    function buildFallback(logText, trainLossText, valLossText) {
+      const log = (logText || '').toLowerCase();
+      let cause = 'unknown';
+      let summary = 'The current evidence is inconclusive.';
+      let stage = 'training_loop';
+      let severity = 'low';
+
+      if (log.includes('out of memory') || log.includes('oom')) {
+        cause = 'oom';
+        stage = 'forward_pass';
+        severity = 'high';
+        summary = 'The run likely failed because the model exceeded available memory.';
+      } else if (log.includes('shape') || log.includes('mat1 and mat2')) {
+        cause = 'shape_mismatch';
+        stage = 'forward_pass';
+        severity = 'high';
+        summary = 'The run likely failed due to incompatible tensor dimensions.';
+      } else if (log.includes('nan') || log.includes('inf')) {
+        cause = 'nan_instability';
+        stage = 'optimization';
+        severity = 'high';
+        summary = 'The run appears numerically unstable.';
+      }
+
+      return {
+        root_cause: cause,
+        confidence: 0.7,
+        summary,
+        stage,
+        severity,
+        symptoms: [
+          { name: 'demo mode', evidence: 'Frontend fallback is active because the API is unavailable.' }
+        ],
+        suggested_fixes: [
+          'Start the backend API for full rule-based analysis.',
+          'Add more training logs and configs for better evaluation.'
+        ],
+        telemetry_to_collect: ['full stack trace', 'train and validation losses'],
+        action_plan: ['Start the API service locally and rerun the sample case.']
+      };
+    }
+
+    function currentPayload() {
+      let config = {};
+      try {
+        config = JSON.parse(document.getElementById('configText').value || '{}');
+      } catch {
+        throw new Error('The config box must contain valid JSON.');
+      }
+
+      return {
+        run_name: document.getElementById('runName').value,
+        framework: document.getElementById('framework').value,
+        model_name: document.getElementById('modelName').value,
+        log_text: document.getElementById('logText').value,
+        config,
+        loss_text: document.getElementById('lossText').value,
+        val_loss_text: document.getElementById('valLossText').value
+      };
+    }
+
+    async function analyze() {
+      let payload;
+      try {
+        payload = currentPayload();
+      } catch (error) {
+        renderResult({
+          root_cause: 'input_error',
+          confidence: 0.99,
+          stage: 'input',
+          severity: 'low',
+          summary: error.message,
+          symptoms: [{ name: 'invalid config', evidence: 'Config JSON could not be parsed.' }],
+          suggested_fixes: ['Fix the JSON formatting and try again.'],
+          telemetry_to_collect: [],
+          action_plan: []
+        });
+        return;
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error('API returned a non-success status');
+        }
+
+        const data = await response.json();
+        renderResult(data);
+      } catch {
+        renderResult(buildFallback(payload.log_text, payload.loss_text, payload.val_loss_text));
+      }
+
+      renderChart(payload.loss_text, payload.val_loss_text);
+    }
+
+    async function copyJson() {
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(currentResult, null, 2));
+      } catch {
+      }
+    }
+
+    async function exportMarkdown() {
+      const payload = currentPayload();
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/report-markdown', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('failed');
+        const markdown = await response.text();
+        downloadText(markdown, `${payload.run_name || 'diagnostic-report'}.md`);
+      } catch {
+        const fallback = `# Diagnostic Report\n\n- Root cause: ${currentResult.root_cause || 'unknown'}\n- Confidence: ${currentResult.confidence || 0}\n\n## Summary\n${currentResult.summary || ''}`;
+        downloadText(fallback, `${payload.run_name || 'diagnostic-report'}.md`);
+      }
+    }
+
+    function downloadText(text, filename) {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('loadSampleBtn').addEventListener('click', () => { applySample(); analyze(); });
+    document.getElementById('analyzeBtn').addEventListener('click', analyze);
+    document.getElementById('copyBtn').addEventListener('click', copyJson);
+    document.getElementById('markdownBtn').addEventListener('click', exportMarkdown);
+
+    populateSamples();
+    applySample();
+    analyze();
+  </script>
+</body>
+</html>

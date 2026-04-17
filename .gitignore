@@ -1,32 +1,27 @@
-# Build artifacts
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.pytest_cache/
+
+# Frontend
+node_modules/
+dist/
+coverage/
+
+# Generated artifacts
 build/
-*.o
-*.obj
-*.exe
+*.log
+*.tmp
+*.temp
 
-# Data directory
-data/
-*.col
-_catalog.json
-
-# IDE files
+# IDE and OS files
 .vscode/
 .vs/
 *.user
 *.suo
 *.sln
-
-# Logs
-*.log
-
-# OS generated files
 .DS_Store
 Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-
-# Compressed files
-*.zip
-*.tar.gz

@@ -1,0 +1,63 @@
+[
+  {
+    "name": "gpu_oom_case",
+    "expected_root_cause": "oom",
+    "payload": {
+      "run_name": "bert-large-oom",
+      "log_text": "RuntimeError: CUDA out of memory. Tried to allocate 1.80 GiB during attention forward pass.",
+      "config": {"learning_rate": 0.0005, "batch_size": 128, "framework": "pytorch"},
+      "loss_values": [2.3, 2.2, 2.2, 2.1]
+    }
+  },
+  {
+    "name": "shape_mismatch_case",
+    "expected_root_cause": "shape_mismatch",
+    "payload": {
+      "run_name": "classifier-head-mismatch",
+      "log_text": "RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x512 and 768x10)",
+      "config": {"learning_rate": 0.0003, "batch_size": 32, "framework": "pytorch"},
+      "loss_values": [1.7, 1.6, 1.55, 1.52]
+    }
+  },
+  {
+    "name": "nan_instability_case",
+    "expected_root_cause": "nan_instability",
+    "payload": {
+      "run_name": "unstable-transformer",
+      "log_text": "Step 440: loss=nan, grad_norm=inf",
+      "config": {"learning_rate": 0.05, "batch_size": 16, "framework": "pytorch"},
+      "loss_values": [1.2, 1.5, 2.8, 99.0]
+    }
+  },
+  {
+    "name": "plateau_case",
+    "expected_root_cause": "stalled_training",
+    "payload": {
+      "run_name": "flat-cnn-run",
+      "log_text": "Training completes but validation does not improve.",
+      "config": {"learning_rate": 0.001, "batch_size": 64, "framework": "pytorch"},
+      "loss_values": [0.92, 0.91, 0.91, 0.90, 0.90, 0.89]
+    }
+  },
+  {
+    "name": "overfitting_case",
+    "expected_root_cause": "overfitting",
+    "payload": {
+      "run_name": "small-dataset-overfit",
+      "log_text": "Validation accuracy peaks early and then degrades over later epochs.",
+      "config": {"learning_rate": 0.0007, "batch_size": 32, "framework": "pytorch"},
+      "train_loss_values": [1.6, 1.2, 0.9, 0.7, 0.5],
+      "val_loss_values": [1.3, 1.25, 1.35, 1.5, 1.7]
+    }
+  },
+  {
+    "name": "data_pipeline_case",
+    "expected_root_cause": "data_pipeline",
+    "payload": {
+      "run_name": "broken-dataset-path",
+      "log_text": "FileNotFoundError: No such file or directory while DataLoader worker 0 was reading training shard 18.",
+      "config": {"learning_rate": 0.001, "batch_size": 8, "framework": "pytorch"},
+      "loss_values": []
+    }
+  }
+]
