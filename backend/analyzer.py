@@ -143,6 +143,11 @@ def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
     lower_log = log_text.lower()
     likely_framework = _detect_framework(lower_log, config)
     stage = _detect_stage(lower_log)
+    has_nan_signal = (
+        "nan" in lower_log
+        or "inf" in lower_log
+        or any(math.isnan(v) or math.isinf(v) for v in train_losses + val_losses)
+    )
 
     symptoms: list[Symptom] = []
     suggested_fixes: list[str] = []
@@ -177,9 +182,9 @@ def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
         ])
         telemetry_to_collect.extend(["tensor shapes per layer", "batch schema sample", "model summary"])
 
-    if "nan" in lower_log or "inf" in lower_log:
-        scores["nan_instability"] += 0.8
-        symptoms.append(Symptom("numerical instability", "high", "The log contains NaN or Inf values."))
+    if has_nan_signal:
+        scores["nan_instability"] += 0.95
+        symptoms.append(Symptom("numerical instability", "high", "The run produced NaN or Inf values in logs or metrics."))
         suggested_fixes.extend([
             "Lower the learning rate and add gradient clipping.",
             "Check input normalization and loss scaling.",
@@ -199,7 +204,10 @@ def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
 
     unstable, unstable_reason = _detect_loss_instability(train_losses)
     if unstable:
-        scores["learning_rate"] += 0.65
+        if has_nan_signal:
+            scores["nan_instability"] += 0.2
+        else:
+            scores["learning_rate"] += 0.65
         symptoms.append(Symptom("unstable loss curve", "medium", unstable_reason))
         suggested_fixes.extend([
             "Reduce the learning rate or warm up gradually.",
@@ -231,7 +239,7 @@ def analyze_payload(payload: dict[str, Any]) -> dict[str, Any]:
     lr = config.get("learning_rate") or config.get("lr")
     try:
         if lr is not None and float(lr) > 0.01:
-            scores["learning_rate"] += 0.35
+            scores["learning_rate"] += 0.15 if has_nan_signal else 0.35
             symptoms.append(Symptom("aggressive learning rate", "medium", f"Configured learning rate appears high: {lr}"))
     except (TypeError, ValueError):
         pass
