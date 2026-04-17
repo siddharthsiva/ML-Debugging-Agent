@@ -62,19 +62,44 @@ The current MVP uses a simple three-stage pipeline:
 
 ## Local run steps
 
-1. Install Python 3.10+
-2. Install dependencies:
+### Windows quick start
+
+1. Install Python 3.11 if needed:
+
+   winget install -e --id Python.Python.3.11
+
+2. Restart the terminal after install.
+
+3. Run the local startup script from the project root:
+
+   .\run_local.bat
+
+This creates a virtual environment, installs dependencies, opens the UI, and starts the FastAPI server on port 8000.
+
+### Manual setup
+
+1. Create a virtual environment:
+
+   python -m venv .venv
+
+2. Activate it:
+
+   .\.venv\Scripts\activate
+
+3. Install dependencies:
 
    pip install -r requirements.txt
 
-3. Start the backend:
+4. Start the backend:
 
-   uvicorn backend.app:app --reload --port 8000
+   python -m uvicorn backend.app:app --reload --host 127.0.0.1 --port 8000
 
-4. Open the frontend file in a browser and point it at the local API
-5. Optionally run the evaluator over the curated cases:
+5. Open [frontend/index.html](frontend/index.html) in a browser.
+
+6. Optionally run the evaluator over the curated cases:
 
    python -m backend.evaluator
+   python -m unittest discover -s tests -v
 
 ## Resume-ready framing
 
